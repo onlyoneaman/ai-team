@@ -1,7 +1,31 @@
 # TeamAI
 
-Multi-agent marketing automation system built with OpenAI Agents SDK.
+AI employees for solopreneurs and small teams. A multi-agent system that simulates a company workforce—agents with specialized roles, hierarchical delegation, and quality verification—so you can scale without hiring.
 
-A hierarchical AI workforce where a Founder agent orchestrates specialized workers (Marketing Head, Market Researcher, Data Analyst, Evaluator) to handle marketing tasks. Workers use bounce-back handoffs to return results, and user-facing deliverables go through an evaluation cycle for quality assurance.
+## How to Run
 
-**Features:** FastAPI + CLI, stateless design, SSE streaming, per-company context, artifact logging.
+### Backend (Python)
+```bash
+cd backend
+cp .env.example .env          # Add your OPENAI_API_KEY
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+python main.py                 # API server at http://localhost:8000
+```
+
+### Frontend (Next.js)
+```bash
+cd teams-web
+npm install
+npm run dev                    # Dev server at http://localhost:3000
+```
+
+## Demo Steps
+
+1. Start the backend: `cd backend && source .venv/bin/activate && python main.py`
+2. Start the frontend: `cd teams-web && npm run dev`
+3. Open http://localhost:3000
+4. Select "Solaris Coffee" from the company dropdown
+5. Click a suggested prompt (e.g., "Sustainability Blog" or "New Espresso Blend")
+6. Watch the agent visualization in the center as the AI workforce collaborates
+7. See the final response rendered as formatted markdown

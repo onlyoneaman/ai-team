@@ -25,25 +25,73 @@ User Request
      │
      ▼
 ┌─────────┐
-│ Founder │ ◄── Orchestrator (only agent that responds to user)
+│ founder │ ◄── Orchestrator (only agent that responds to user)
 └────┬────┘
      │
      ├──────────────┬────────────────┬─────────────────┐
      ▼              ▼                ▼                 ▼
 ┌───────────┐ ┌───────────┐ ┌─────────────┐ ┌───────────────┐
-│ Marketing │ │  Market   │ │    Data     │ │   Evaluator   │
-│   Head    │ │ Researcher│ │   Analyst   │ │  (reviewer)   │
+│ marketing │ │  market   │ │    data     │ │   evaluator   │
+│   _head   │ │_researcher│ │  _analyst   │ │  (reviewer)   │
 └─────┬─────┘ └─────┬─────┘ └──────┬──────┘ └───────┬───────┘
       │             │              │                │
-      │             └──► Founder ◄─┘ (bounce-back)  │
+      │             └──► founder ◄─┘ (bounce-back)  │
       │                    ▲                        │
       ├────────┐           │                        ▼
-      ▼        ▼           │                    Founder
+      ▼        ▼           │                    founder
 ┌─────────┐ ┌─────────┐    │
-│   SEO   │ │ Content │    │
-│ Analyst │ │ Creator │    │
+│   seo   │ │ content │    │
+│_analyst │ │_creator │    │
 └────┬────┘ └────┬────┘    │
-     └──► Marketing Head ◄─┘ (bounce-back)
+     └──► marketing_head ◄─┘ (bounce-back)
+```
+
+**Agent IDs** (snake_case): `founder`, `marketing_head`, `market_researcher`, `data_analyst`, `seo_analyst`, `content_creator`, `evaluator`
+
+## TaskMessage System
+
+All inter-agent communication uses a unified message type:
+
+```python
+class TaskMessage(BaseModel):
+    kind: str        # "task" | "result" | "evaluation" | "feedback"
+    payload_json: str  # JSON-encoded free-form payload
+```
+
+### Why `payload_json` is a string
+
+OpenAI Agents SDK enforces strict JSON schema for `input_type`. A `dict[str, Any]` generates `additionalProperties: true` which is rejected. Using a JSON string bypasses this constraint while preserving payload flexibility.
+
+### Message Kinds
+
+| Kind | Direction | Purpose |
+|------|-----------|---------|
+| `task` | Downward (founder→team) | Delegate work with context |
+| `result` | Upward (worker→lead→founder) | Return completed work |
+| `evaluation` | evaluator→founder | Judgment with verdict |
+| `feedback` | founder→team | Revision instructions |
+
+### Handoff Callback
+
+```python
+def on_task_handoff(ctx, message, from_agent, to_agent):
+    # Parse payload
+    payload = json.loads(message.payload_json)
+
+    # Store artifact
+    artifact_key = f"{from_agent}_v{iteration}"
+    ctx.context.task.artifacts[artifact_key] = {
+        "kind": message.kind,
+        "payload": payload,
+    }
+
+    # Handle evaluation verdicts
+    if message.kind == "evaluation":
+        verdict = payload.get("verdict", "").upper()
+        if verdict == "PASS":
+            ctx.context.task.status = "done"
+        elif verdict == "REVISE":
+            ctx.context.task.status = "needs_revision"
 ```
 
 ## Core System
@@ -69,6 +117,7 @@ result = await session.run("Hello")
 - **Event streaming** - Yields `SessionEvent` objects
 - **Artifact logging** - Saves to `tmp/{run_id}/`
 - **Duration tracking** - Measures execution time
+- **Cost estimation** - USD pricing for token usage
 
 ### Artifacts (tmp/{run_id}/)
 
@@ -77,8 +126,8 @@ result = await session.run("Hello")
 | `input.txt` | Original user message |
 | `events.jsonl` | All events (append-only log) |
 | `response.md` | Final agent response |
-| `trace.json` | Run summary + handoff trace |
-| `handoff_trace.json` | Detailed handoff context |
+| `trace.json` | Run summary + handoff trace + usage |
+| `conversation.json` | Clean conversation summary |
 
 ## Running
 
@@ -112,28 +161,28 @@ python cli.py --list-companies
 
 ## Agent Roles
 
-| Agent | Role | Capabilities |
-|-------|------|--------------|
-| **Founder** | Orchestrator | Receives all requests, delegates, manages evaluation cycles |
-| **Marketing Head** | Lead | Coordinates SEO + Content, reports to Founder |
-| **Evaluator** | Reviewer | Reviews user-facing deliverables (brand voice, quality, task completion) |
-| **Market Researcher** | Worker | Web search, internal research DB |
-| **Data Analyst** | Worker | Internal analytics, KPIs, performance metrics |
-| **SEO Analyst** | Worker | Keyword research, web search |
-| **Content Creator** | Worker | Blog posts, social media, brand assets |
+| Agent ID | Role | Capabilities |
+|----------|------|--------------|
+| `founder` | Orchestrator | Receives all requests, delegates, manages evaluation cycles |
+| `marketing_head` | Lead | Coordinates SEO + Content, reports to founder |
+| `evaluator` | Reviewer | Reviews user-facing deliverables (brand voice, quality, task completion) |
+| `market_researcher` | Worker | Web search, internal research DB |
+| `data_analyst` | Worker | Internal analytics, KPIs, performance metrics |
+| `seo_analyst` | Worker | Keyword research, web search |
+| `content_creator` | Worker | Blog posts, social media, brand assets |
 
-## Bounce-Back Handoffs
+## Handoff Routes
 
-Workers must bounce back to their owner with structured results via `input_type`:
+All handoffs use `TaskMessage` with `input_type=TaskMessage`:
 
-| Agent | Bounces To | Handoff Data |
-|-------|------------|--------------|
-| Market Researcher | Founder | `MarketResearchResult(findings, opportunities, competitive_insights)` |
-| Data Analyst | Founder | `DataAnalysisResult(metrics, insights, recommendations)` |
-| SEO Analyst | Marketing Head | `SEOAnalysisResult(keywords, recommendations, analysis)` |
-| Content Creator | Marketing Head | `ContentDraftResult(content, content_type)` |
-| Marketing Head | Founder | `MarketingDeliverableResult(deliverable, seo_summary, content_summary)` |
-| Evaluator | Founder | `EvaluationResult(verdict, brand_voice_score, quality_score, completion_score, feedback)` |
+| From | To | Kind |
+|------|-----|------|
+| `founder` | `marketing_head`, `market_researcher`, `data_analyst`, `evaluator` | `task` or `feedback` |
+| `marketing_head` | `seo_analyst`, `content_creator` | `task` |
+| `marketing_head` | `founder` | `result` |
+| `seo_analyst`, `content_creator` | `marketing_head` | `result` |
+| `market_researcher`, `data_analyst` | `founder` | `result` |
+| `evaluator` | `founder` | `evaluation` |
 
 ## Task State
 
@@ -141,32 +190,64 @@ Workers must bounce back to their owner with structured results via `input_type`
 
 | Field | Description |
 |-------|-------------|
-| `goal` | User's objective (set by Founder) |
+| `goal` | User's objective (set by founder) |
 | `task_type` | content_creation, research, analysis, strategy |
 | `iteration` | Current revision cycle (starts 0) |
 | `max_iterations` | Max revision attempts (default 3) |
 | `status` | in_progress, needs_revision, done |
-| `artifacts` | Deliverables keyed by `{type}_v{iteration}` |
-| `feedback` | Revision notes from Evaluator |
+| `artifacts` | Deliverables keyed by `{agent_id}_v{iteration}` |
+| `feedback` | Revision notes from evaluator |
 
 ## Evaluation Flow
 
 For user-facing deliverables (content, reports):
-1. Team completes work → bounces to Founder
-2. Founder → Evaluator
-3. Evaluator: PASS → `status="done"` | REVISE → `status="needs_revision"` + feedback
-4. Founder: done → respond to user | needs_revision → increment iteration, re-delegate
+
+1. Team completes work → bounces to founder with `kind="result"`
+2. founder → evaluator with `kind="task"`
+3. evaluator returns `kind="evaluation"` with:
+   - `verdict`: "PASS" or "REVISE"
+   - `brand_voice_score`, `quality_score`, `completion_score` (1-5)
+   - `feedback` (if REVISE)
+4. founder: PASS → respond to user | REVISE → increment iteration, re-delegate with `kind="feedback"`
+
+## Usage & Pricing
+
+Token usage is tracked per run with cost estimation:
+
+```python
+from utils import estimate_cost
+
+# In trace.json usage block:
+{
+  "requests": 4,
+  "input_tokens": 6308,
+  "output_tokens": 1136,
+  "total_tokens": 7444,
+  "model": "gpt-4.1",
+  "total_estimated_usd_cost": 0.021704
+}
+```
+
+### Model Pricing (per 1M tokens)
+
+| Model | Input | Output |
+|-------|-------|--------|
+| `gpt-4.1` (default) | $2.00 | $8.00 |
+| `gpt-4.1-mini` | $0.40 | $1.60 |
+| `gpt-4.1-nano` | $0.10 | $0.40 |
+| `gpt-4o` | $2.50 | $10.00 |
+| `gpt-4o-mini` | $0.15 | $0.60 |
 
 ## Tools
 
 | Tool | Used By | Source |
 |------|---------|--------|
-| `get_market_research` | Market Researcher | Company JSON (full data) |
-| `get_seo_data` | SEO Analyst | Company JSON (full data) |
-| `get_brand_assets` | Content Creator | Company JSON (full data) |
-| `get_content_templates` | Content Creator | Company JSON (full data) |
-| `get_analytics` | Data Analyst | Company JSON (full data) |
-| `WebSearchTool` | Researcher, SEO | OpenAI hosted |
+| `get_market_research` | market_researcher | Company JSON |
+| `get_seo_data` | seo_analyst | Company JSON |
+| `get_brand_assets` | content_creator | Company JSON |
+| `get_content_templates` | content_creator | Company JSON |
+| `get_analytics` | data_analyst | Company JSON |
+| `WebSearchTool` | market_researcher, seo_analyst | OpenAI hosted |
 
 ## Adding a New Company
 
@@ -245,22 +326,6 @@ Content-Type: application/json
 - `artifacts_saved` - Run artifacts saved to tmp/ (includes path)
 - `error` - Error occurred
 
-### Parallel Requests
-
-Since the API is stateless, you can run multiple companies simultaneously:
-
-```bash
-# Terminal 1: Solaris Coffee
-curl -X POST http://localhost:8000/api/companies/solaris/chat \
-  -H "Content-Type: application/json" \
-  -d '{"message": "Research trends", "stream": false}'
-
-# Terminal 2: PromptsMint (at the same time)
-curl -X POST http://localhost:8000/api/companies/promptsmint/chat \
-  -H "Content-Type: application/json" \
-  -d '{"message": "SEO keywords", "stream": false}'
-```
-
 ## File Structure
 
 ```
@@ -269,6 +334,7 @@ backend/
 ├── cli.py                  # Terminal app (same core as API)
 ├── config.py               # Company loading utilities
 ├── schemas.py              # Pydantic request/response models
+├── utils.py                # Utilities (pricing, etc.)
 ├── requirements.txt
 ├── core/
 │   ├── __init__.py
@@ -283,14 +349,15 @@ backend/
 │   └── promptsmint.json    # PromptsMint context
 ├── workforce/
 │   ├── __init__.py
-│   ├── team.py             # Agent factory: create_workforce()
+│   ├── team.py             # Agent factory: create_workforce(), TaskMessage
 │   └── tools.py            # Tool factory: create_tools()
 └── tmp/                    # Run artifacts (gitignored)
     └── {run_id}/
         ├── input.txt
         ├── events.jsonl
         ├── response.md
-        └── trace.json
+        ├── trace.json
+        └── conversation.json
 ```
 
 ## Environment Variables
@@ -302,16 +369,16 @@ backend/
 
 ## Key Design Decisions
 
-1. **Stateless API** - Each request specifies company_id, no global state
-2. **Parallel-safe** - Multiple companies can run simultaneously
-3. **Transport-agnostic core** - Same Session works for API, CLI, or any future integration
-4. **Artifact logging** - Every run saves debug info to `tmp/{run_id}/`
-5. **Agents are company-agnostic** - Same agent code works for any company
-6. **Company data is injected** - Tools receive data at creation time
-7. **No model hardcoded** - Uses SDK default, configurable via environment
-8. **SSE for real-time** - Stream agent traces to frontend
-9. **Bounce-back handoffs** - Workers always return to their owner
-10. **Evaluation cycles** - User-facing content goes through Evaluator before response
+1. **Unified TaskMessage** - Single message type for all handoffs (`kind` + `payload_json`)
+2. **JSON string payload** - Bypasses SDK strict schema while preserving flexibility
+3. **Snake_case agent IDs** - Consistent identifiers: `founder`, `data_analyst`, etc.
+4. **Stateless API** - Each request specifies company_id, no global state
+5. **Parallel-safe** - Multiple companies can run simultaneously
+6. **Transport-agnostic core** - Same Session works for API, CLI, or any future integration
+7. **Artifact logging** - Every run saves debug info to `tmp/{run_id}/`
+8. **Cost tracking** - Token usage with USD cost estimation
+9. **Bounce-back handoffs** - Workers always return to their owner with `kind="result"`
+10. **Evaluation cycles** - User-facing content goes through evaluator before response
 
 ---
 

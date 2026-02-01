@@ -58,8 +58,8 @@ python cli.py runs                          # Show recent runs
 ### API Mode
 ```bash
 python main.py
-# Server: http://localhost:8000
-# Docs: http://localhost:8000/docs
+# Server: http://localhost:8023
+# Docs: http://localhost:8023/docs
 ```
 
 ### Frontend
@@ -77,7 +77,7 @@ npm run dev      # http://localhost:3000
    source .venv/bin/activate
    python main.py
    ```
-   Server runs at http://localhost:8000
+   Server runs at http://localhost:8023
 
 2. **Start the frontend:**
    ```bash

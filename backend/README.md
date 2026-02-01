@@ -66,8 +66,8 @@ The backend also provides a FastAPI server.
 ```bash
 python main.py
 ```
-- Server: `http://localhost:8000`
-- Docs: `http://localhost:8000/docs`
+- Server: `http://localhost:8023`
+- Docs: `http://localhost:8023/docs`
 
 ## Project Structure
 

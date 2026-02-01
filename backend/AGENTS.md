@@ -140,8 +140,8 @@ export OPENAI_API_KEY=sk-...
 python main.py
 ```
 
-Server: `http://localhost:8000`
-Docs: `http://localhost:8000/docs`
+Server: `http://localhost:8023`
+Docs: `http://localhost:8023/docs`
 
 ### CLI
 

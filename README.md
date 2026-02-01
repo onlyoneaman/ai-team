@@ -10,7 +10,7 @@ cd backend
 cp .env.example .env          # Add your OPENAI_API_KEY
 python3 -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
-python main.py                 # API server at http://localhost:8000
+python main.py                 # API server at http://localhost:8023
 ```
 
 ### Frontend (Next.js)

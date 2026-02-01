@@ -122,7 +122,7 @@ function AgentNodeChat({ id, name, role, status, depth = 0 }: AgentNodeChatProps
           {name}
         </p>
         <div className="flex items-center gap-1.5 mt-0.5">
-          <div className={cn('w-1.5 h-1.5 rounded-full', roleColor, status === 'idle' && 'opacity-40')} />
+          <div className={cn('w-1.5 h-1.5 rounded-full', roleColor, status === 'idle' && 'opacity-85')} />
           <span
             className={cn(
               'text-[11px]',

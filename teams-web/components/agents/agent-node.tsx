@@ -55,7 +55,7 @@ export function AgentNode({
     <motion.div
       className={cn(
         'flex items-center gap-3 py-2 px-2 rounded-lg transition-all',
-        status === 'idle' && 'opacity-40',
+        status === 'idle' && 'opacity-85',
         status === 'active' && 'opacity-100 bg-primary/5',
         status === 'complete' && 'opacity-70'
       )}

@@ -26,16 +26,16 @@ GENERIC_PROMPTS = [
 COMPANY_PROMPTS = {
     "solaris": [
         {
-            "label": "Sustainability Audit",
-            "prompt": "Review our current sustainability practices and suggest improvements.",
+            "label": "Sustainability Blog",
+            "prompt": "Create an SEO optimized blog post on sustainability practices in our industry.",
             "complexity": "complex",
-            "expected_flow": ["Founder", "Sustainability Expert", "Founder"],
+            "expected_flow": ["Founder", "Marketing Head", "SEO Analyst", "Content Creator", "Evaluator", "Founder"],
         },
         {
-            "label": "New Coffee Blend",
-            "prompt": "Propose a marketing campaign for a new single-origin Ethiopian blend.",
+            "label": "New Espresso Blend",
+            "prompt": "Research and create content (blog) for a new espresso blend we are launching.",
             "complexity": "complex",
-            "expected_flow": ["Founder", "Marketing Head", "Content Creator", "Founder"],
+            "expected_flow": ["Founder", "Market Researcher", "Marketing Head", "Content Creator", "Evaluator", "Founder"],
         },
     ],
     "promptsmint": [

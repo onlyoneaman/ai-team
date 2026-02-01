@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Play,
@@ -48,7 +48,7 @@ function formatAgentName(agent: string): string {
     .join(' ');
 }
 
-function ActivityItemRow({ item, isLast }: { item: ActivityItem; isLast: boolean }) {
+function ActivityItemRow({ item, isOldest }: { item: ActivityItem; isOldest: boolean }) {
   const config = eventConfig[item.type] || { icon: Zap, color: 'bg-slate-100 text-slate-600' };
   const Icon = config.icon;
   const [, setTick] = useState(0);
@@ -61,12 +61,14 @@ function ActivityItemRow({ item, isLast }: { item: ActivityItem; isLast: boolean
 
   return (
     <motion.div
-      initial={{ opacity: 0, x: -10 }}
-      animate={{ opacity: 1, x: 0 }}
+      initial={{ opacity: 0, y: -20, scale: 0.95 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+      layout
       className="flex items-start gap-3 relative"
     >
-      {/* Timeline line */}
-      {!isLast && (
+      {/* Timeline line - connects to older items below */}
+      {!isOldest && (
         <div className="absolute left-[14px] top-8 bottom-0 w-px bg-border" />
       )}
 
@@ -102,10 +104,13 @@ export function ActivityFeed({ className }: ActivityFeedProps) {
   const { activityFeed, status } = useChatStore();
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Auto-scroll to bottom on new items
+  // Reverse the feed so newest items appear at the top
+  const reversedFeed = useMemo(() => [...activityFeed].reverse(), [activityFeed]);
+
+  // Keep scroll at top when new items arrive
   useEffect(() => {
     if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+      scrollRef.current.scrollTop = 0;
     }
   }, [activityFeed]);
 
@@ -115,7 +120,7 @@ export function ActivityFeed({ className }: ActivityFeedProps) {
         Activity
       </h3>
       <ScrollArea className="flex-1 px-4" ref={scrollRef}>
-        {activityFeed.length === 0 ? (
+        {reversedFeed.length === 0 ? (
           <div className="py-6 text-center">
             <p className="text-sm text-muted-foreground">
               {status === 'idle'
@@ -124,12 +129,12 @@ export function ActivityFeed({ className }: ActivityFeedProps) {
             </p>
           </div>
         ) : (
-          <AnimatePresence>
-            {activityFeed.map((item, index) => (
+          <AnimatePresence mode="popLayout">
+            {reversedFeed.map((item, index) => (
               <ActivityItemRow
                 key={item.id}
                 item={item}
-                isLast={index === activityFeed.length - 1}
+                isOldest={index === reversedFeed.length - 1}
               />
             ))}
           </AnimatePresence>

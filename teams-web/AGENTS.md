@@ -129,8 +129,8 @@ components/
 - **Complete**: 70% opacity, checkmark
 
 ### Avatars
-- `/avatar.png` - Default state
-- `/avatar-thinking.png` - When typing or agents working
+- `/avatar.webp` - Default state
+- `/avatar-thinking.webp` - When typing or agents working
 
 ## Key Interactions
 

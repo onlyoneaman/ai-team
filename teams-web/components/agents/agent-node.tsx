@@ -11,6 +11,7 @@ import {
   PenTool,
   CheckCircle,
 } from 'lucide-react';
+import { AVATAR } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 import type { AgentStatus, AgentRole } from '@/lib/types';
 
@@ -76,7 +77,7 @@ export function AgentNode({
           transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
         >
           <Image
-            src={status === 'active' ? '/avatar-thinking.png' : '/avatar.png'}
+            src={status === 'active' ? AVATAR.running : AVATAR.static}
             alt="Founder"
             width={40}
             height={40}

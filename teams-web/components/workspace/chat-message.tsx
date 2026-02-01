@@ -9,6 +9,8 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import type { ChatMessage as ChatMessageType } from '@/lib/types';
 
+import { AVATAR } from '@/lib/constants';
+
 // Dynamic import for markdown preview (client-side only)
 const MarkdownPreview = dynamic(
   () => import('@uiw/react-markdown-preview').then((mod) => mod.default),
@@ -53,7 +55,7 @@ export function ChatMessage({ message, isThinking = false }: ChatMessageProps) {
         </div>
       ) : (
         <Image
-          src="/avatar.png"
+          src={AVATAR.static}
           alt="AI"
           width={36}
           height={36}

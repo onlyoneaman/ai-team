@@ -12,6 +12,7 @@ import {
   CheckCircle,
   User,
 } from 'lucide-react';
+import { AVATAR } from '@/lib/constants';
 import { cn } from '@/lib/utils';
 import { useCompanyStore, useChatStore } from '@/lib/stores';
 import type { AgentStatus, AgentRole } from '@/lib/types';
@@ -69,7 +70,7 @@ function AgentNodeChat({ id, name, role, status, depth = 0 }: AgentNodeChatProps
             transition={{ duration: 1.5, repeat: Infinity }}
           >
             <Image
-              src={status === 'active' ? '/avatar-thinking.png' : '/avatar.png'}
+              src={status === 'active' ? AVATAR.running : AVATAR.static}
               alt="Founder"
               width={44}
               height={44}
@@ -205,7 +206,7 @@ export function AgentTreeChat() {
     >
       <div className="flex items-center gap-3 mb-4 pb-3 border-b border-border">
         <Image
-          src="/avatar-thinking.png"
+          src={AVATAR.running}
           alt="Working"
           width={36}
           height={36}

@@ -12,6 +12,8 @@ import { AgentTreeChat } from '@/components/agents/agent-tree-chat';
 import { useChatStore, useCompanyStore, useUIStore } from '@/lib/stores';
 import { cn } from '@/lib/utils';
 
+import { AVATAR } from '@/lib/constants';
+
 export function ChatArea() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [input, setInput] = useState('');
@@ -98,7 +100,7 @@ export function ChatArea() {
           <div className="text-center mb-8">
             <div className="inline-block mb-4">
               <Image
-                src={isTyping ? '/avatar-thinking.png' : '/avatar.png'}
+                src={isTyping ? AVATAR.running : AVATAR.static}
                 alt="AI Assistant"
                 width={100}
                 height={100}

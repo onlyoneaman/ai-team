@@ -7,6 +7,8 @@ import { CompanySelector } from '@/components/company/company-selector';
 import { useUIStore, useChatStore } from '@/lib/stores';
 import { cn } from '@/lib/utils';
 
+import { AVATAR } from '@/lib/constants';
+
 export function Header() {
   const { sidebarOpen, toggleSidebar, currentView, setView, isTyping } = useUIStore();
   const { status, resetWorkspace } = useChatStore();
@@ -35,7 +37,7 @@ export function Header() {
           className="flex items-center gap-2.5 px-2 py-1 -ml-2 rounded-lg transition-colors hover:bg-primary/10"
         >
           <Image
-            src={isTyping || isRunning ? '/avatar-thinking.png' : '/avatar.png'}
+            src={isTyping || isRunning ? AVATAR.running : AVATAR.static}
             alt="Teams AI"
             width={32}
             height={32}

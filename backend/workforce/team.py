@@ -96,12 +96,6 @@ def create_workforce(company_data: dict) -> dict[str, Any]:
         agent.model_settings = ModelSettings(tool_choice="required", temperature=0)
         return agent
 
-    # worker_instructions = (
-    #     "Make tool calls to get data that can help you complete your task. "
-    #     "After getting data (optional) when repsonding, call the appropriate `transfer_to_<agent_name>` function with your results. "
-    #     "Always use handing off to transfer control to the next agent."
-    # )
-
     worker_instructions = """
 You are not allowed to answer the user directly.
 Never present results as normal text.

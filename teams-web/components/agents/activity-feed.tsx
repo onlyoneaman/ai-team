@@ -85,9 +85,9 @@ function ActivityItemRow({ item, isLast }: { item: ActivityItem; isLast: boolean
         <p className="text-sm text-foreground leading-snug">{item.message}</p>
         <div className="flex items-center gap-2 mt-1">
           <span className="text-xs font-medium text-primary">{formatAgentName(item.agent)}</span>
-          <span className="text-xs text-muted-foreground">
+          {/* <span className="text-xs text-muted-foreground">
             {formatRelativeTime(item.timestamp)}
-          </span>
+          </span> */}
         </div>
       </div>
     </motion.div>

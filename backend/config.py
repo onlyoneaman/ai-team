@@ -45,45 +45,25 @@ def list_companies() -> list[str]:
     return [f.stem for f in DATA_DIR.glob("*.json")]
 
 
+from utils.prompts import GENERIC_PROMPTS, COMPANY_PROMPTS
+
+
 def get_suggested_prompts(company_data: dict) -> list[dict]:
     """
     Generate suggested prompts based on company context.
+    Returns a mix of company-specific and generic prompts (max 5).
     """
-    company_name = company_data.get("company", {}).get("name", "the company")
-
-    return [
-        {
-            "label": "Simple Research",
-            "prompt": f"Research current industry trends for {company_name}.",
-            "complexity": "simple",
-            "expected_flow": ["Founder", "Market Researcher", "Founder"],
-        },
-        {
-            "label": "SEO Analysis",
-            "prompt": "What keywords should we target for our new product launch?",
-            "complexity": "medium",
-            "expected_flow": ["Founder", "Marketing Head", "SEO Analyst", "Marketing Head", "Founder"],
-        },
-        {
-            "label": "Content Creation",
-            "prompt": "Write a seo-optimized blog post about sustainable practices in our industry.",
-            "complexity": "medium",
-            "expected_flow": ["Founder", "Marketing Head", "SEO Analyst", "Content Creator", "Marketing Head", "Founder", "Evaluator", "Founder"],
-        },
-        {
-            "label": "Full Marketing Strategy",
-            "prompt": "I need a complete marketing strategy and blog post for our new product launch. Include SEO recommendations.",
-            "complexity": "complex",
-            "expected_flow": [
-                "Founder", "Market Researcher", "Founder",
-                "Marketing Head", "SEO Analyst", "Content Creator",
-                "Marketing Head", "Founder"
-            ],
-        },
-        {
-            "label": "Competitive Analysis",
-            "prompt": f"Analyze our competitors and identify opportunities for {company_name}.",
-            "complexity": "medium",
-            "expected_flow": ["Founder", "Market Researcher", "Founder"],
-        },
-    ]
+    company_id = company_data.get("id")
+    
+    # Get company specific prompts
+    specific_prompts = COMPANY_PROMPTS.get(company_id, [])
+    
+    # Start with company specific prompts
+    suggested = list(specific_prompts)
+    
+    # Fill remaining slots with generic prompts
+    remaining_slots = 5 - len(suggested)
+    if remaining_slots > 0:
+        suggested.extend(GENERIC_PROMPTS[:remaining_slots])
+        
+    return suggested[:5]

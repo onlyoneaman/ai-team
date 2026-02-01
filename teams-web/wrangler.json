@@ -1,8 +1,9 @@
 {
-  "name": "teams-web",
-  "compatibility_date": "2024-09-23",
-  "assets": {
-    "directory": "./out",
-    "binding": "ASSETS"
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "ai-team",
+  "compatibility_date": "2025-07-26",
+  "pages_build_output_dir": "out",
+  "observability": {
+    "enabled": true
   }
 }

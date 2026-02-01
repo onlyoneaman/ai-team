@@ -1,0 +1,15 @@
+# AI Workforce Orchestrator - Dependencies
+
+# OpenAI Agents SDK
+openai-agents>=0.0.16
+
+# FastAPI and server
+fastapi>=0.115.0
+uvicorn[standard]>=0.32.0
+
+# Async support
+sse-starlette>=2.1.0
+
+# Utilities
+python-dotenv>=1.0.0
+pydantic>=2.0.0

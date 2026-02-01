@@ -1,0 +1,154 @@
+{
+  "id": "solaris",
+  "company": {
+    "name": "Solaris Coffee",
+    "mission": "Zero-waste specialty coffee for urban professionals.",
+    "brand_voice": "Sophisticated, transparent, eco-rebellious.",
+    "philosophy": "Role-bounded mandate, follow playbooks, escalate on doubt.",
+    "target_audience": "Urban professionals aged 25-45 who value sustainability and premium coffee experiences.",
+    "products": [
+      "Single-origin espresso blends",
+      "Oat milk specialty lattes",
+      "Cold brew concentrates",
+      "Compostable coffee pods"
+    ]
+  },
+  "market_research": {
+    "coffee_trends_2025": {
+      "title": "Coffee Industry Trends 2025",
+      "summary": "The specialty coffee market is projected to grow at 12% CAGR through 2027.",
+      "key_findings": [
+        "Oat milk has overtaken almond as the #1 plant-based milk choice (34% market share)",
+        "Cold brew segment growing 25% year-over-year",
+        "Sustainability certifications increase purchase intent by 47%",
+        "Gen Z prefers ready-to-drink formats (68% vs 42% for millennials)",
+        "Premium single-origin coffees command 40% price premium"
+      ],
+      "consumer_preferences": {
+        "top_flavors": ["vanilla", "caramel", "hazelnut", "lavender", "maple"],
+        "preferred_origins": ["Ethiopia", "Colombia", "Guatemala", "Kenya"],
+        "sustainability_importance": "78% of consumers willing to pay more for eco-friendly packaging"
+      }
+    },
+    "competitive_landscape": {
+      "title": "Competitive Analysis - Specialty Coffee",
+      "major_players": [
+        {"name": "Blue Bottle", "positioning": "Premium artisan", "weakness": "Limited sustainability messaging"},
+        {"name": "Stumptown", "positioning": "Direct trade focus", "weakness": "Narrow product range"},
+        {"name": "La Colombe", "positioning": "Draft latte innovation", "weakness": "Higher price point"},
+        {"name": "Intelligentsia", "positioning": "Coffee education", "weakness": "Limited retail presence"}
+      ],
+      "market_gaps": [
+        "Zero-waste packaging leadership opportunity",
+        "Subscription-first DTC model underserved",
+        "Corporate sustainability partnerships"
+      ]
+    }
+  },
+  "seo_data": {
+    "keyword_rankings": {
+      "high_volume": [
+        {"keyword": "specialty coffee", "volume": 74000, "difficulty": 78, "intent": "informational"},
+        {"keyword": "best cold brew", "volume": 45000, "difficulty": 65, "intent": "commercial"},
+        {"keyword": "oat milk latte", "volume": 38000, "difficulty": 52, "intent": "commercial"},
+        {"keyword": "sustainable coffee brands", "volume": 12000, "difficulty": 45, "intent": "commercial"},
+        {"keyword": "zero waste coffee", "volume": 8500, "difficulty": 32, "intent": "informational"}
+      ],
+      "long_tail_opportunities": [
+        {"keyword": "best oat milk for coffee", "volume": 6200, "difficulty": 28},
+        {"keyword": "eco friendly coffee pods", "volume": 4800, "difficulty": 35},
+        {"keyword": "single origin vs blend", "volume": 3200, "difficulty": 22},
+        {"keyword": "coffee subscription gift", "volume": 2900, "difficulty": 41}
+      ]
+    },
+    "content_gaps": [
+      "Comprehensive guide to sustainable coffee practices",
+      "Oat milk latte recipe variations",
+      "Coffee origin stories and farmer profiles",
+      "Zero-waste brewing methods"
+    ]
+  },
+  "brand_assets": {
+    "tone_examples": {
+      "sophisticated": "Crafted with intention. Every bean tells a story of excellence.",
+      "transparent": "From farm to cup: 73% of your $5 goes directly to our partner farmers.",
+      "eco_rebellious": "Waste is so last century. Join the coffee revolution."
+    },
+    "value_propositions": [
+      "Premium taste without the planet-sized footprint",
+      "Coffee that funds farmer futures",
+      "The last cup you'll ever feel guilty about"
+    ]
+  },
+  "content_templates": {
+    "blog_structures": {
+      "how_to": ["Introduction with hook", "What you'll need", "Step-by-step instructions", "Pro tips", "FAQ", "CTA"],
+      "listicle": ["Engaging intro", "Numbered items with headers", "Visual breaks", "Summary", "Related posts"],
+      "thought_leadership": ["Industry context", "Key insight", "Supporting data", "Actionable takeaways", "Future outlook"]
+    },
+    "social_media": {
+      "instagram": {"optimal_hashtags": 8, "caption_length": "125-150 chars", "best_times": ["7am", "12pm", "7pm"]},
+      "linkedin": {"post_length": "1200-1500 chars", "best_days": ["Tuesday", "Wednesday", "Thursday"]},
+      "twitter": {"thread_length": "5-7 tweets", "engagement_hooks": ["questions", "stats", "contrarian takes"]}
+    }
+  },
+  "analytics": {
+    "sales_metrics": {
+      "monthly_revenue": "$127,500",
+      "revenue_growth": "+18% MoM",
+      "average_order_value": "$42.30",
+      "orders_per_month": 3015,
+      "top_products": [
+        {"name": "Oat Milk Latte Pods (12-pack)", "units": 892, "revenue": "$31,220"},
+        {"name": "Single-Origin Ethiopian Blend", "units": 645, "revenue": "$22,575"},
+        {"name": "Cold Brew Concentrate", "units": 534, "revenue": "$18,690"}
+      ],
+      "revenue_by_channel": {
+        "website_dtc": "62%",
+        "amazon": "24%",
+        "wholesale": "14%"
+      }
+    },
+    "customer_metrics": {
+      "total_customers": 8420,
+      "new_customers_monthly": 685,
+      "returning_customer_rate": "34%",
+      "customer_lifetime_value": "$156",
+      "churn_rate": "4.2%",
+      "nps_score": 72,
+      "segments": [
+        {"name": "Eco-Enthusiasts", "percentage": "38%", "avg_order": "$52"},
+        {"name": "Convenience Seekers", "percentage": "31%", "avg_order": "$38"},
+        {"name": "Coffee Connoisseurs", "percentage": "21%", "avg_order": "$65"},
+        {"name": "Gift Buyers", "percentage": "10%", "avg_order": "$45"}
+      ]
+    },
+    "marketing_performance": {
+      "campaigns": [
+        {"name": "Earth Day Zero-Waste", "spend": "$2,500", "revenue": "$12,400", "roas": 4.96},
+        {"name": "Summer Cold Brew Launch", "spend": "$3,200", "revenue": "$9,800", "roas": 3.06},
+        {"name": "Subscription Push Q1", "spend": "$1,800", "revenue": "$8,100", "roas": 4.50}
+      ],
+      "channel_performance": {
+        "email": {"open_rate": "28%", "click_rate": "4.2%", "conversion": "2.1%"},
+        "social_organic": {"reach": "45K/mo", "engagement": "3.8%", "referral_traffic": "12%"},
+        "paid_social": {"cpc": "$0.82", "ctr": "2.4%", "conversion": "1.8%"},
+        "seo": {"organic_traffic": "18K/mo", "top_landing_pages": ["/cold-brew-guide", "/sustainability", "/subscriptions"]}
+      }
+    },
+    "website_analytics": {
+      "monthly_visitors": 52000,
+      "bounce_rate": "42%",
+      "avg_session_duration": "2:45",
+      "pages_per_session": 3.2,
+      "conversion_rate": "2.8%",
+      "top_traffic_sources": [
+        {"source": "Organic Search", "percentage": "38%"},
+        {"source": "Direct", "percentage": "28%"},
+        {"source": "Social", "percentage": "18%"},
+        {"source": "Email", "percentage": "12%"},
+        {"source": "Referral", "percentage": "4%"}
+      ]
+    }
+  }
+}

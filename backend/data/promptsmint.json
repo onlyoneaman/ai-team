@@ -1,0 +1,263 @@
+{
+  "id": "promptsmint",
+  "company": {
+    "name": "PromptsMint",
+    "mission": "Make AI accessible through curated, optimized prompts for everyone from creators to enterprises.",
+    "brand_voice": "Professional yet approachable, resourceful, community-focused.",
+    "philosophy": "Quality curation over quantity. Test everything. Share knowledge freely.",
+    "target_audience": "Business professionals, content creators, developers, marketers, and anyone seeking to optimize their AI workflows.",
+    "products": [
+      "AI Prompts Library (500+ prompts)",
+      "Custom Prompt Creation",
+      "Prompt Request Service",
+      "Category-based Prompt Browser"
+    ]
+  },
+  "market_research": {
+    "ai_prompts_trends_2025": {
+      "title": "AI Prompts Market Trends 2025",
+      "summary": "The prompt engineering market is projected to reach $2.5B by 2027, driven by enterprise AI adoption.",
+      "key_findings": [
+        "78% of businesses now use AI tools daily, up from 45% in 2023",
+        "Custom prompt libraries reduce AI task completion time by 40%",
+        "Enterprise prompt management is the fastest growing segment (85% YoY)",
+        "Multi-modal prompts (text + image) growing at 120% annually",
+        "Prompt marketplaces seeing 3x user growth quarter over quarter"
+      ],
+      "consumer_preferences": {
+        "top_categories": [
+          "business",
+          "marketing",
+          "coding",
+          "content writing",
+          "image generation"
+        ],
+        "preferred_formats": [
+          "ready-to-use",
+          "customizable templates",
+          "chain prompts"
+        ],
+        "pricing_sensitivity": "65% prefer subscription models over per-prompt pricing"
+      }
+    },
+    "competitive_landscape": {
+      "title": "Competitive Analysis - AI Prompt Marketplaces",
+      "major_players": [
+        {
+          "name": "PromptBase",
+          "positioning": "Marketplace for buying/selling",
+          "weakness": "Quality inconsistency"
+        },
+        {
+          "name": "FlowGPT",
+          "positioning": "Community-driven sharing",
+          "weakness": "Overwhelming volume, hard to find quality"
+        },
+        {
+          "name": "AIPRM",
+          "positioning": "Chrome extension focus",
+          "weakness": "Platform-locked to ChatGPT"
+        },
+        {
+          "name": "PromptHero",
+          "positioning": "Image prompt focus",
+          "weakness": "Limited text prompt coverage"
+        }
+      ],
+      "market_gaps": [
+        "Enterprise-grade prompt management solutions",
+        "Cross-platform prompt optimization",
+        "Prompt analytics and performance tracking",
+        "Team collaboration features for prompt libraries"
+      ]
+    }
+  },
+  "seo_data": {
+    "keyword_rankings": {
+      "high_volume": [
+        {
+          "keyword": "chatgpt prompts",
+          "volume": 165000,
+          "difficulty": 72,
+          "intent": "informational"
+        },
+        {
+          "keyword": "ai prompts",
+          "volume": 89000,
+          "difficulty": 68,
+          "intent": "informational"
+        },
+        {
+          "keyword": "midjourney prompts",
+          "volume": 74000,
+          "difficulty": 58,
+          "intent": "commercial"
+        },
+        {
+          "keyword": "best ai prompts",
+          "volume": 32000,
+          "difficulty": 55,
+          "intent": "commercial"
+        },
+        {
+          "keyword": "prompt engineering",
+          "volume": 28000,
+          "difficulty": 62,
+          "intent": "informational"
+        }
+      ],
+      "long_tail_opportunities": [
+        {
+          "keyword": "chatgpt prompts for marketing",
+          "volume": 8200,
+          "difficulty": 35
+        },
+        {
+          "keyword": "ai prompts for business",
+          "volume": 6800,
+          "difficulty": 32
+        },
+        {
+          "keyword": "claude prompts examples",
+          "volume": 4500,
+          "difficulty": 28
+        },
+        {
+          "keyword": "free ai prompt templates",
+          "volume": 12000,
+          "difficulty": 42
+        }
+      ]
+    },
+    "content_gaps": [
+      "Comprehensive prompt engineering tutorials",
+      "Industry-specific prompt collections (legal, healthcare, finance)",
+      "Prompt chaining and workflow guides",
+      "AI model comparison for different prompt types"
+    ]
+  },
+  "brand_assets": {
+    "tone_examples": {
+      "professional": "Unlock AI's full potential with prompts engineered for results.",
+      "approachable": "No PhD required. Just copy, paste, and watch the magic happen.",
+      "community_focused": "Built by prompt engineers, for everyone. Join 10,000+ creators."
+    },
+    "value_propositions": [
+      "100+ tested prompts ready to use today",
+      "Save hours with pre-optimized AI workflows",
+      "From beginner to power user in minutes"
+    ]
+  },
+  "content_templates": {
+    "blog_structures": {
+      "prompt_showcase": [
+        "Hook with use case",
+        "The prompt",
+        "Example output",
+        "Variations",
+        "Pro tips",
+        "Related prompts"
+      ],
+      "tutorial": [
+        "Problem statement",
+        "Step-by-step solution",
+        "Prompt templates",
+        "Common mistakes",
+        "Advanced tips"
+      ],
+      "comparison": [
+        "Introduction",
+        "Criteria explanation",
+        "Side-by-side analysis",
+        "Use case recommendations",
+        "Conclusion"
+      ]
+    },
+    "social_media": {
+      "twitter": {
+        "thread_length": "5-8 tweets",
+        "format": "Problem → Prompt → Result",
+        "best_times": [
+          "9am",
+          "1pm",
+          "5pm"
+        ]
+      },
+      "linkedin": {
+        "post_length": "800-1200 chars",
+        "format": "Story + Prompt + CTA",
+        "best_days": [
+          "Tuesday",
+          "Wednesday"
+        ]
+      },
+      "instagram": {
+        "optimal_hashtags": 12,
+        "format": "Carousel with prompt examples",
+        "best_times": [
+          "11am",
+          "7pm"
+        ]
+      }
+    }
+  },
+  "analytics": {
+    "usage_metrics": {
+      "monthly_active_users": 12500,
+      "user_growth": "+24% MoM",
+      "prompts_copied": 45200,
+      "avg_prompts_per_user": 3.6,
+      "top_categories": [
+        {"name": "Business", "usage": 8900, "percentage": "19.7%"},
+        {"name": "Marketing", "usage": 7200, "percentage": "15.9%"},
+        {"name": "Coding", "usage": 6800, "percentage": "15.0%"},
+        {"name": "Writing", "usage": 5400, "percentage": "11.9%"}
+      ],
+      "popular_prompts": [
+        {"title": "LinkedIn Post Generator", "copies": 2840},
+        {"title": "Code Review Assistant", "copies": 2150},
+        {"title": "Email Response Writer", "copies": 1920}
+      ]
+    },
+    "customer_metrics": {
+      "total_users": 28400,
+      "free_users": 24200,
+      "premium_users": 4200,
+      "conversion_rate": "14.8%",
+      "churn_rate": "5.1%",
+      "nps_score": 68,
+      "segments": [
+        {"name": "Marketers", "percentage": "32%", "top_use": "content generation"},
+        {"name": "Developers", "percentage": "28%", "top_use": "code assistance"},
+        {"name": "Writers", "percentage": "22%", "top_use": "creative writing"},
+        {"name": "Business", "percentage": "18%", "top_use": "emails & docs"}
+      ]
+    },
+    "marketing_performance": {
+      "campaigns": [
+        {"name": "ProductHunt Launch", "spend": "$0", "signups": 3200, "cac": "$0"},
+        {"name": "Twitter Thread Series", "spend": "$500", "signups": 1850, "cac": "$0.27"},
+        {"name": "SEO Content Push", "spend": "$1,200", "signups": 2400, "cac": "$0.50"}
+      ],
+      "channel_performance": {
+        "organic_social": {"followers": "18.5K", "engagement": "4.2%", "referral_signups": "28%"},
+        "seo": {"organic_traffic": "32K/mo", "top_keywords": ["chatgpt prompts", "ai prompts", "prompt templates"]},
+        "referral": {"active_referrers": 420, "referral_signups": "18%", "avg_referrals_per_user": 2.3},
+        "email": {"subscribers": 15200, "open_rate": "32%", "click_rate": "5.8%"}
+      }
+    },
+    "website_analytics": {
+      "monthly_visitors": 85000,
+      "bounce_rate": "38%",
+      "avg_session_duration": "4:12",
+      "pages_per_session": 5.8,
+      "signup_conversion": "8.2%",
+      "top_traffic_sources": [
+        {"source": "Organic Search", "percentage": "45%"},
+        {"source": "Direct", "percentage": "22%"},
+        {"source": "Social", "percentage": "20%"},
+        {"source": "Referral", "percentage": "13%"}
+      ]
+    }
+  }
+}

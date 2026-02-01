@@ -3,6 +3,7 @@
   "scripts": {
     "dev": "next",
     "build": "next build",
+    "deploy": "wrangler deploy",
     "start": "serve out"
   },
   "dependencies": {

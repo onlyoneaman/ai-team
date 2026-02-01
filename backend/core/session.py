@@ -166,6 +166,12 @@ class Session:
         # Save response
         (self.artifacts_path / "response.md").write_text(self.response)
 
+        # Collect agents from handoff trace (more reliable than event tracking)
+        if self.context and self.context.trace_steps:
+            for step in self.context.trace_steps:
+                if step.get("agent"):
+                    self.agents_involved.add(step["agent"])
+
         # Save trace summary
         trace = {
             "run_id": self.run_id,
@@ -176,20 +182,32 @@ class Session:
             "agents_involved": list(self.agents_involved),
             "event_count": len(self.events),
             "usage": self.usage,
-            "handoffs": [
-                e.to_dict() for e in self.events
-                if e.type == EventType.AGENT_CHANGE
-            ],
+            "handoffs": self.context.trace_steps if self.context else [],
+            "task_state": {
+                "goal": self.context.task.goal,
+                "status": self.context.task.status,
+                "iteration": self.context.task.iteration,
+                "artifacts": self.context.task.artifacts,
+            } if self.context else None,
         }
         (self.artifacts_path / "trace.json").write_text(
             json.dumps(trace, indent=2)
         )
 
-        # Save context trace steps if available
-        if self.context and self.context.trace_steps:
-            (self.artifacts_path / "handoff_trace.json").write_text(
-                json.dumps(self.context.trace_steps, indent=2)
-            )
+        # Save conversation (cleaner than events.jsonl)
+        conversation = {
+            "input": (self.artifacts_path / "input.txt").read_text() if (self.artifacts_path / "input.txt").exists() else "",
+            "output": self.response,
+            "agents": list(self.agents_involved),
+            "handoffs": self.context.trace_steps if self.context else [],
+            "tool_calls": [
+                {"agent": e.agent, "tool": e.data.get("tool")}
+                for e in self.events if e.type == EventType.TOOL_CALL
+            ],
+        }
+        (self.artifacts_path / "conversation.json").write_text(
+            json.dumps(conversation, indent=2)
+        )
 
     async def run(self, message: str) -> SessionResult:
         """Run the workflow and return the final result (non-streaming)."""
@@ -209,6 +227,8 @@ class Session:
         if self.artifacts_path:
             (self.artifacts_path / "input.txt").write_text(message)
 
+        # Add initial agent
+        self.agents_involved.add(self.current_agent)
         yield self._emit(EventType.START, message="Starting agent workflow...")
 
         try:
@@ -216,22 +236,20 @@ class Session:
                 self.entry_agent,
                 message,
                 context=self.context,
+                max_turns=30
             )
 
             response_chunks: list[str] = []
 
             async for event in result.stream_events():
-                # Track agent changes from event
-                event_agent = None
-                if hasattr(event, "agent") and event.agent:
-                    event_agent = event.agent.name
-                    if event_agent != self.current_agent:
-                        self.current_agent = event_agent
-                        self.agents_involved.add(event_agent)
-                        yield self._emit(
-                            EventType.AGENT_CHANGE,
-                            details=f"{event_agent} is now handling the request",
-                        )
+                # Sync with context.current_agent (set by handoff callbacks - source of truth)
+                if self.context and self.context.current_agent != self.current_agent:
+                    self.current_agent = self.context.current_agent
+                    self.agents_involved.add(self.current_agent)
+                    yield self._emit(
+                        EventType.AGENT_CHANGE,
+                        details=f"{self.current_agent} is now handling the request",
+                    )
 
                 # Handle stream events
                 if isinstance(event, RunItemStreamEvent):
@@ -243,8 +261,9 @@ class Session:
                             # Dedupe: only emit once per call_id
                             if call_id not in self._emitted_tool_calls:
                                 self._emitted_tool_calls.add(call_id)
-                                # Use agent from this event if available
-                                agent_for_call = event_agent or self.current_agent
+                                # Use context.current_agent (set by handoff callbacks) as source of truth
+                                agent_for_call = self.context.current_agent if self.context else self.current_agent
+                                self.agents_involved.add(agent_for_call)
                                 yield self._emit_with_agent(
                                     EventType.TOOL_CALL,
                                     agent_for_call,
@@ -252,8 +271,10 @@ class Session:
                                     details=f"Using tool: {tool_name}",
                                 )
                         elif item.raw_item.type == "function_call_output":
-                            yield self._emit(
+                            agent_for_result = self.context.current_agent if self.context else self.current_agent
+                            yield self._emit_with_agent(
                                 EventType.TOOL_RESULT,
+                                agent_for_result,
                                 details="Tool execution completed",
                             )
 

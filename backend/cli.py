@@ -545,7 +545,8 @@ async def cmd_interactive(args):
 
 def get_default_company() -> str:
     companies = list_companies()
-    return companies[0] if companies else "solaris"
+    DEFAULT_COMPANY = os.getenv("COMPANY_ID", "solaris")
+    return DEFAULT_COMPANY if DEFAULT_COMPANY in companies else companies[0]
 
 
 def main():

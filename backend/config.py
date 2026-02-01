@@ -66,9 +66,9 @@ def get_suggested_prompts(company_data: dict) -> list[dict]:
         },
         {
             "label": "Content Creation",
-            "prompt": "Write a blog post about sustainable practices in our industry.",
+            "prompt": "Write a seo-optimized blog post about sustainable practices in our industry.",
             "complexity": "medium",
-            "expected_flow": ["Founder", "Marketing Head", "Content Creator", "Marketing Head", "Founder"],
+            "expected_flow": ["Founder", "Marketing Head", "SEO Analyst", "Content Creator", "Marketing Head", "Founder", "Evaluator", "Founder"],
         },
         {
             "label": "Full Marketing Strategy",

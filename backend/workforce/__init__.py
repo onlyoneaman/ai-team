@@ -1,9 +1,11 @@
-"""
-AI Workforce - Generic Multi-Agent System
-Agents are company-agnostic and receive context at runtime.
-"""
+"""AI Workforce - Multi-Agent System with bounce-back handoffs and evaluation cycles."""
 
-from .team import create_workforce, AgentHierarchy, WorkforceContext
+from .team import (
+    create_workforce, WorkforceContext, TaskState, HIERARCHY, EvaluationResult,
+)
 from .tools import create_tools
 
-__all__ = ["create_workforce", "create_tools", "AgentHierarchy", "WorkforceContext"]
+__all__ = [
+    "create_workforce", "create_tools", "WorkforceContext", "TaskState", "HIERARCHY",
+    "EvaluationResult",
+]

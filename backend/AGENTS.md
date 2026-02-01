@@ -25,22 +25,25 @@ User Request
      │
      ▼
 ┌─────────┐
-│ Founder │ ◄── Orchestrator (entry point)
+│ Founder │ ◄── Orchestrator (only agent that responds to user)
 └────┬────┘
      │
-     ├─────────────────────┬────────────────────┐
-     ▼                     ▼                    ▼
-┌─────────────┐   ┌──────────────┐   ┌──────────────┐
-│ Marketing   │   │   Market     │   │    Data      │
-│    Head     │   │  Researcher  │   │   Analyst    │ ◄── Workers
-└──────┬──────┘   └──────────────┘   └──────────────┘
-       │
-       ├────────────────┐
-       ▼                ▼
-┌─────────────┐   ┌─────────────┐
-│ SEO Analyst │   │  Content    │
-│             │   │  Creator    │ ◄── Workers
-└─────────────┘   └─────────────┘
+     ├──────────────┬────────────────┬─────────────────┐
+     ▼              ▼                ▼                 ▼
+┌───────────┐ ┌───────────┐ ┌─────────────┐ ┌───────────────┐
+│ Marketing │ │  Market   │ │    Data     │ │   Evaluator   │
+│   Head    │ │ Researcher│ │   Analyst   │ │  (reviewer)   │
+└─────┬─────┘ └─────┬─────┘ └──────┬──────┘ └───────┬───────┘
+      │             │              │                │
+      │             └──► Founder ◄─┘ (bounce-back)  │
+      │                    ▲                        │
+      ├────────┐           │                        ▼
+      ▼        ▼           │                    Founder
+┌─────────┐ ┌─────────┐    │
+│   SEO   │ │ Content │    │
+│ Analyst │ │ Creator │    │
+└────┬────┘ └────┬────┘    │
+     └──► Marketing Head ◄─┘ (bounce-back)
 ```
 
 ## Core System
@@ -111,12 +114,48 @@ python cli.py --list-companies
 
 | Agent | Role | Capabilities |
 |-------|------|--------------|
-| **Founder** | Orchestrator | Receives all requests, delegates to leads/workers |
+| **Founder** | Orchestrator | Receives all requests, delegates, manages evaluation cycles |
 | **Marketing Head** | Lead | Coordinates SEO + Content, reports to Founder |
+| **Evaluator** | Reviewer | Reviews user-facing deliverables (brand voice, quality, task completion) |
 | **Market Researcher** | Worker | Web search, internal research DB |
 | **Data Analyst** | Worker | Internal analytics, KPIs, performance metrics |
 | **SEO Analyst** | Worker | Keyword research, web search |
 | **Content Creator** | Worker | Blog posts, social media, brand assets |
+
+## Bounce-Back Handoffs
+
+Workers must bounce back to their owner with structured results via `input_type`:
+
+| Agent | Bounces To | Handoff Data |
+|-------|------------|--------------|
+| Market Researcher | Founder | `MarketResearchResult(findings, opportunities, competitive_insights)` |
+| Data Analyst | Founder | `DataAnalysisResult(metrics, insights, recommendations)` |
+| SEO Analyst | Marketing Head | `SEOAnalysisResult(keywords, recommendations, analysis)` |
+| Content Creator | Marketing Head | `ContentDraftResult(content, content_type)` |
+| Marketing Head | Founder | `MarketingDeliverableResult(deliverable, seo_summary, content_summary)` |
+| Evaluator | Founder | `EvaluationResult(verdict, brand_voice_score, quality_score, completion_score, feedback)` |
+
+## Task State
+
+`WorkforceContext.task` tracks state across handoffs:
+
+| Field | Description |
+|-------|-------------|
+| `goal` | User's objective (set by Founder) |
+| `task_type` | content_creation, research, analysis, strategy |
+| `iteration` | Current revision cycle (starts 0) |
+| `max_iterations` | Max revision attempts (default 3) |
+| `status` | in_progress, needs_revision, done |
+| `artifacts` | Deliverables keyed by `{type}_v{iteration}` |
+| `feedback` | Revision notes from Evaluator |
+
+## Evaluation Flow
+
+For user-facing deliverables (content, reports):
+1. Team completes work → bounces to Founder
+2. Founder → Evaluator
+3. Evaluator: PASS → `status="done"` | REVISE → `status="needs_revision"` + feedback
+4. Founder: done → respond to user | needs_revision → increment iteration, re-delegate
 
 ## Tools
 
@@ -271,3 +310,9 @@ backend/
 6. **Company data is injected** - Tools receive data at creation time
 7. **No model hardcoded** - Uses SDK default, configurable via environment
 8. **SSE for real-time** - Stream agent traces to frontend
+9. **Bounce-back handoffs** - Workers always return to their owner
+10. **Evaluation cycles** - User-facing content goes through Evaluator before response
+
+---
+
+*Keep this doc updated when modifying `workforce/team.py` - agent roles, handoffs, or task state.*

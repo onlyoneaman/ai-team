@@ -15,7 +15,7 @@ from agents import Runner
 from agents.stream_events import RunItemStreamEvent, RawResponsesStreamEvent
 
 from workforce import WorkforceContext
-from utils import estimate_cost
+from utils.pricing_utils import estimate_cost
 
 
 class EventType(str, Enum):

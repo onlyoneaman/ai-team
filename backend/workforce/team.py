@@ -92,8 +92,14 @@ def on_task_handoff(
         payload = {"raw": message.payload_json}
 
     # Store artifact with agent_name_v{iteration} key
+    # Use a suffix if this agent already has an artifact this iteration (prevents overwrites)
     iteration = ctx.context.task.iteration
-    artifact_key = f"{from_agent}_v{iteration}"
+    base_key = f"{from_agent}_v{iteration}"
+    artifact_key = base_key
+    suffix = 0
+    while artifact_key in ctx.context.task.artifacts:
+        suffix += 1
+        artifact_key = f"{base_key}_{suffix}"
     ctx.context.task.artifacts[artifact_key] = {
         "kind": message.kind,
         "payload": payload,
@@ -421,9 +427,23 @@ Create compelling content that embodies our brand voice.
 - Use brand assets for tone and style
 
 ## TaskMessage Usage (kind="result")
-- `payload_json`: THE ACTUAL CONTENT ITSELF - the full deliverable
+- `payload_json`: Must contain the FULLY WRITTEN content
 
-CRITICAL: Your payload IS the work product. Don't summarize - just deliver.
+## CRITICAL: Write Actual Content, Not Metadata
+When asked to write content (blog post, article, social post, etc.):
+- You MUST write the complete, publication-ready text
+- Include full paragraphs, not bullet points or outlines
+- For blog posts: title, introduction, body sections with real prose, conclusion
+- DO NOT return just structure, templates, keywords, or metadata
+- DO NOT echo back what you received - CREATE the actual written piece
+
+WRONG (metadata only):
+{{"meta_title": "...", "structure": ["intro", "section 1"], "keywords": [...]}}
+
+CORRECT (actual content):
+{{"title": "Your Title Here", "content": "Full written article text with multiple paragraphs... Introduction paragraph here. First main section with real sentences and insights. Second section continues the narrative... Conclusion wraps it up.", "meta_description": "..."}}
+
+The PRIMARY deliverable is the written content itself. Metadata is secondary.
 
 {worker_instructions}"""),
         tools=[tools["get_content_templates"], tools["get_brand_assets"]],

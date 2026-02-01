@@ -132,7 +132,7 @@ def print_event(event):
 
     elif event.type == EventType.TOOL_CALL:
         tool = event.data.get("tool", "unknown")
-        print(f"{Colors.DIM}[{timestamp}]{Colors.RESET} {Colors.WARNING}⚡ {event.agent} → {tool}{Colors.RESET}")
+        print(f"\n{Colors.DIM}[{timestamp}]{Colors.RESET} {Colors.WARNING}⚡ {event.agent} → {tool}{Colors.RESET}")
 
     elif event.type == EventType.TOOL_RESULT:
         print(f"{Colors.DIM}[{timestamp}]{Colors.RESET} {Colors.DIM}  ✓ Tool completed{Colors.RESET}")

@@ -15,6 +15,7 @@ from agents import Runner
 from agents.stream_events import RunItemStreamEvent, RawResponsesStreamEvent
 
 from workforce import WorkforceContext
+from utils import estimate_cost
 
 
 class EventType(str, Enum):
@@ -106,7 +107,7 @@ class Session:
         self.end_time: datetime | None = None
         self.events: list[SessionEvent] = []
         self.agents_involved: set[str] = set()
-        self.current_agent: str = "Founder"
+        self.current_agent: str = "founder"
         self.response: str = ""
         self.context: WorkforceContext | None = None
         self.artifacts_path: Path | None = None
@@ -290,14 +291,16 @@ class Session:
             self.response = result.final_output or "".join(response_chunks) or "No response generated."
             self.end_time = datetime.now()
 
-            # Capture usage
+            # Capture usage and estimate cost
             if hasattr(result, "context_wrapper") and hasattr(result.context_wrapper, "usage"):
                 usage = result.context_wrapper.usage
+                cost = estimate_cost(usage.input_tokens, usage.output_tokens)
                 self.usage = {
                     "requests": usage.requests,
                     "input_tokens": usage.input_tokens,
                     "output_tokens": usage.output_tokens,
                     "total_tokens": usage.total_tokens,
+                    **cost,
                 }
 
             yield self._emit(

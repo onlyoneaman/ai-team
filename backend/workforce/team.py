@@ -1,5 +1,6 @@
 """AI Workforce - Multi-Agent System with bounce-back handoffs and evaluation cycles."""
 
+import json
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any, Literal
@@ -11,13 +12,19 @@ from agents.extensions.handoff_prompt import prompt_with_handoff_instructions
 from .tools import create_tools
 
 
-class EvaluationResult(BaseModel):
-    """Result from Evaluator."""
-    verdict: str  # PASS or REVISE
-    brand_voice_score: int
-    quality_score: int
-    completion_score: int
-    feedback: str | None = None
+class TaskMessage(BaseModel):
+    """Universal message type for all inter-agent communication.
+
+    kind: intent signal (task, result, evaluation, feedback)
+    payload_json: JSON-encoded free-form payload (string due to SDK strict schema)
+
+    Note: payload_json is a string because OpenAI Agents SDK enforces strict JSON schema
+    and does not allow `additionalProperties: true` (i.e., dict[str, Any] is illegal).
+    Agents serialize their payload as JSON; callbacks deserialize with json.loads().
+    """
+
+    kind: str  # task, result, evaluation, feedback
+    payload_json: str  # JSON-encoded dict, parsed by callback
 
 
 # === CONTEXT & STATE ===
@@ -38,7 +45,7 @@ class WorkforceContext:
     company_data: dict = field(default_factory=dict)
     trace_steps: list = field(default_factory=list)
     task: TaskState = field(default_factory=TaskState)
-    current_agent: str = "Founder"
+    current_agent: str = "founder"
 
     def log_step(self, agent_name: str, action: str, details: str = ""):
         self.trace_steps.append({
@@ -62,23 +69,49 @@ HIERARCHY = {
 
 # === HANDOFF CALLBACKS ===
 
-def _make_handoff_callback(from_agent: str, to_agent: str):
-    """Factory for handoff callbacks."""
-    def callback(ctx: RunContextWrapper[WorkforceContext]):
-        ctx.context.log_step(from_agent, "handoff", to_agent)
-        ctx.context.current_agent = to_agent
-    return callback
+def on_task_handoff(
+    ctx: RunContextWrapper[WorkforceContext],
+    message: TaskMessage,
+    from_agent: str,
+    to_agent: str
+):
+    """Universal TaskMessage handoff callback.
 
+    Logs handoff, updates current agent, and stores message in artifacts.
+    For evaluation messages, also updates task status.
 
-def _on_evaluator_to_founder(ctx: RunContextWrapper[WorkforceContext], data: EvaluationResult):
-    ctx.context.log_step("Evaluator", "handoff", "Founder")
-    ctx.context.current_agent = "Founder"
-    if data.verdict == "REVISE":
-        ctx.context.task.status = "needs_revision"
-        ctx.context.task.feedback.append(data.feedback)
-    else:
-        ctx.context.task.status = "done"
-    ctx.context.task.artifacts["last_evaluation"] = data.model_dump()
+    Note: This must be a sync function - SDK does not await async callbacks.
+    """
+    ctx.context.log_step(from_agent, "handoff", f"{to_agent} (kind={message.kind})")
+    ctx.context.current_agent = to_agent
+
+    # Parse the JSON payload
+    try:
+        payload = json.loads(message.payload_json)
+    except json.JSONDecodeError:
+        payload = {"raw": message.payload_json}
+
+    # Store artifact with agent_name_v{iteration} key
+    iteration = ctx.context.task.iteration
+    artifact_key = f"{from_agent}_v{iteration}"
+    ctx.context.task.artifacts[artifact_key] = {
+        "kind": message.kind,
+        "payload": payload,
+    }
+
+    # Handle evaluation verdicts
+    if message.kind == "evaluation":
+        try:
+            verdict = payload.get("verdict", "").upper()
+            if verdict == "REVISE":
+                ctx.context.task.status = "needs_revision"
+                feedback = payload.get("feedback")
+                if feedback:
+                    ctx.context.task.feedback.append(feedback)
+            elif verdict == "PASS":
+                ctx.context.task.status = "done"
+        except Exception:
+            pass  # Let Founder interpret the raw message
 
 
 def create_workforce(company_data: dict) -> dict[str, Any]:
@@ -96,17 +129,31 @@ def create_workforce(company_data: dict) -> dict[str, Any]:
         agent.model_settings = ModelSettings(tool_choice="required", temperature=0)
         return agent
 
+    # Base worker instructions - append to all non-Founder agents
     worker_instructions = """
-You are not allowed to answer the user directly.
-Never present results as normal text.
+CRITICAL RULES:
 
-Process:
-1) Use tools as needed.
-2) When ready, IMMEDIATELY call the appropriate transfer_to_* handoff tool.
-Your final action in the turn must be the handoff tool call.
+1. You MUST NOT write normal text responses.
+2. You MUST end your turn by calling a transfer_to_* handoff tool.
+3. Every handoff MUST include a TaskMessage argument.
+4. The TaskMessage MUST contain your actual work in payload_json.
+
+TaskMessage format:
+{
+  "kind": "task" | "result" | "evaluation" | "feedback",
+  "payload_json": "{ ... JSON-encoded deliverable ... }"
+}
+
+- `kind`: The intent of this message
+- `payload_json`: Your actual work as a JSON STRING - structure it however makes sense for YOUR role
+
+Put ALL useful output inside payload_json (as valid JSON).
+Your final action MUST be the handoff tool call.
 """
 
     # === AGENTS ===
+
+    handoff_params = {"input_type": TaskMessage}
 
     founder = Agent(
         name="Founder",
@@ -151,7 +198,14 @@ You are the strategic orchestrator. You receive all user requests, delegate to y
 - Only YOU respond to the user
 - For user-facing deliverables, ALWAYS send to Evaluator first
 - Maintain {voice} brand voice in all communications
-- When delegating, be specific about what you need"""),
+- When delegating, be specific about what you need
+
+## TaskMessage Usage
+When delegating or giving feedback, ALWAYS include a TaskMessage with:
+- kind: "task" (delegating), "feedback" (revision loop)
+- payload_json: JSON string with task details, deliverables, or feedback
+
+The receiving agent structures their response based on your payload."""),
     )
 
     marketing_head = Agent(
@@ -178,6 +232,12 @@ You oversee all marketing initiatives and coordinate between SEO analysis and co
 4. Review deliverables from your team
 5. Compile final marketing deliverable
 6. Hand off back to Founder with your compiled results
+
+## TaskMessage Usage
+- Delegating to team: `kind="task"` - describe what you need and why
+- Returning to Founder: `kind="result"` - deliver the compiled artifact
+
+Structure `payload_json` based on what you're delivering.
 
 {worker_instructions}"""),
     )
@@ -215,8 +275,14 @@ Review user-facing deliverables before they are presented to the user.
 - PASS if all scores are 4 or higher
 - REVISE if any score is 3 or below
 
-## MANDATORY: When Done
-You MUST call `transfer_to_founder` with your evaluation. Include verdict (PASS/REVISE), scores (brand_voice_score, quality_score, completion_score each 1-5), and feedback if REVISE."""),
+## TaskMessage Usage (kind="evaluation")
+You MUST call `transfer_to_founder` with:
+- `kind`: "evaluation"
+- `payload_json`: Must include `verdict` ("PASS" or "REVISE"), scores, and feedback if needed
+
+DO NOT rewrite content or make decisions beyond judgment. Just evaluate.
+
+{worker_instructions}"""),
     )
 
     market_researcher = Agent(
@@ -241,6 +307,11 @@ Conduct market research, analyze industry trends, and provide competitive intell
 - Focus on our industry and target market
 - Look for actionable insights that inform strategy
 - Identify gaps in the market that {name} can exploit
+
+## TaskMessage Usage (kind="result")
+- `payload_json`: Your actual findings - structure based on what was requested
+
+Focus on RAW FINDINGS, not executive summaries.
 
 {worker_instructions}"""),
         tools=[tools["get_market_research"], WebSearchTool()],
@@ -270,6 +341,11 @@ Analyze internal business data, track KPIs, and provide actionable insights.
 - Identify opportunities for improvement
 - Highlight both wins and areas of concern
 
+## TaskMessage Usage (kind="result")
+- `payload_json`: Your actual metrics and insights - structure based on what was requested
+
+Focus on DATA and FACTUAL OBSERVATIONS.
+
 {worker_instructions}"""),
         tools=[tools["get_analytics"]],
     )
@@ -298,10 +374,19 @@ Analyze search trends, identify keyword opportunities, and improve content disco
 - Prioritize long-tail keywords with lower difficulty for quick wins
 - Consider search intent (informational, commercial, transactional)
 
+## TaskMessage Usage (kind="result")
+- `payload_json`: Your actual SEO data - structure based on what was requested
+
+Focus on STRUCTURED DATA. Don't write prose.
+
 {worker_instructions}"""),
         tools=[tools["get_seo_data"], WebSearchTool()],
         handoffs=[
-            handoff(agent=marketing_head, on_handoff=_make_handoff_callback("SEO Analyst", "Marketing Head"))
+            handoff(
+                agent=marketing_head,
+                on_handoff=lambda ctx, msg: on_task_handoff(ctx, msg, "seo_analyst", "marketing_head"),
+                **handoff_params
+            )
         ]
     )
 
@@ -335,43 +420,94 @@ Create compelling content that embodies our brand voice.
 - Use templates for structure guidance
 - Use brand assets for tone and style
 
+## TaskMessage Usage (kind="result")
+- `payload_json`: THE ACTUAL CONTENT ITSELF - the full deliverable
+
+CRITICAL: Your payload IS the work product. Don't summarize - just deliver.
+
 {worker_instructions}"""),
         tools=[tools["get_content_templates"], tools["get_brand_assets"]],
     )
 
-    # Workers → Leads (simple handoffs, no typed input)
+    # Workers → Leads
     content_creator.handoffs = [
-        handoff(agent=marketing_head, on_handoff=_make_handoff_callback("Content Creator", "Marketing Head"))
+        handoff(
+            agent=marketing_head,
+            on_handoff=lambda ctx, msg: on_task_handoff(ctx, msg, "content_creator", "marketing_head"),
+            **handoff_params
+        )
     ]
 
-    # Workers → Founder (simple handoffs)
+    # Workers → Founder
     market_researcher.handoffs = [
-        handoff(agent=founder, on_handoff=_make_handoff_callback("Market Researcher", "Founder"))
+        handoff(
+            agent=founder,
+            on_handoff=lambda ctx, msg: on_task_handoff(ctx, msg, "market_researcher", "founder"),
+            **handoff_params
+        )
     ]
     data_analyst.handoffs = [
-        handoff(agent=founder, on_handoff=_make_handoff_callback("Data Analyst", "Founder"))
+        handoff(
+            agent=founder,
+            on_handoff=lambda ctx, msg: on_task_handoff(ctx, msg, "data_analyst", "founder"),
+            **handoff_params
+        )
     ]
 
     # Marketing Head → can delegate to team or hand back to Founder
     marketing_head.handoffs = [
-        handoff(agent=seo_analyst, on_handoff=_make_handoff_callback("Marketing Head", "SEO Analyst")),
-        handoff(agent=content_creator, on_handoff=_make_handoff_callback("Marketing Head", "Content Creator")),
-        handoff(agent=founder, on_handoff=_make_handoff_callback("Marketing Head", "Founder")),
+        handoff(
+            agent=seo_analyst,
+            on_handoff=lambda ctx, msg: on_task_handoff(ctx, msg, "marketing_head", "seo_analyst"),
+            **handoff_params
+        ),
+        handoff(
+            agent=content_creator,
+            on_handoff=lambda ctx, msg: on_task_handoff(ctx, msg, "marketing_head", "content_creator"),
+            **handoff_params
+        ),
+        handoff(
+            agent=founder,
+            on_handoff=lambda ctx, msg: on_task_handoff(ctx, msg, "marketing_head", "founder"),
+            **handoff_params
+        ),
     ]
 
-    # Evaluator → Founder (typed for decision making)
+    # Evaluator → Founder (kind="evaluation")
     evaluator.handoffs = [
-        handoff(agent=founder, on_handoff=_on_evaluator_to_founder, input_type=EvaluationResult)
+        handoff(
+            agent=founder,
+            on_handoff=lambda ctx, msg: on_task_handoff(ctx, msg, "evaluator", "founder"),
+            **handoff_params
+        )
     ]
 
-    # Founder → can delegate to team
+    # Founder → can delegate to team (kind="task" or kind="feedback")
     founder.handoffs = [
-        handoff(agent=marketing_head, on_handoff=_make_handoff_callback("Founder", "Marketing Head")),
-        handoff(agent=market_researcher, on_handoff=_make_handoff_callback("Founder", "Market Researcher")),
-        handoff(agent=data_analyst, on_handoff=_make_handoff_callback("Founder", "Data Analyst")),
-        handoff(agent=evaluator, on_handoff=_make_handoff_callback("Founder", "Evaluator")),
+        handoff(
+            agent=marketing_head,
+            on_handoff=lambda ctx, msg: on_task_handoff(ctx, msg, "founder", "marketing_head"),
+            **handoff_params
+        ),
+        handoff(
+            agent=market_researcher,
+            on_handoff=lambda ctx, msg: on_task_handoff(ctx, msg, "founder", "market_researcher"),
+            **handoff_params
+        ),
+        handoff(
+            agent=data_analyst,
+            on_handoff=lambda ctx, msg: on_task_handoff(ctx, msg, "founder", "data_analyst"),
+            **handoff_params
+        ),
+        handoff(
+            agent=evaluator,
+            on_handoff=lambda ctx, msg: on_task_handoff(ctx, msg, "founder", "evaluator"),
+            **handoff_params
+        ),
     ]
 
+    # All non-Founder agents must use tools (enforces handoff requirement)
+    marketing_head = require_tools(marketing_head)
     seo_analyst = require_tools(seo_analyst)
     market_researcher = require_tools(market_researcher)
     data_analyst = require_tools(data_analyst)
